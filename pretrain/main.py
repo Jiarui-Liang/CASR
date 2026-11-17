@@ -27,7 +27,9 @@ def get_args_parser():
         gradient norm if using gradient clipping. """)
     parser.add_argument('--batch_size_per_gpu', default=64, type=int,
         help='Per-GPU batch-size.')
-    parser.add_argument('--epochs', default='10-90-165', type=str, help='Number of epochs of training.')
+    parser.add_argument('--epochs', default='200-200-100', type=str,
+        help='Number of epochs at each MCC granularity level (paired with --data_granularity). '
+             'Stage 1 (--mode C): 200-200-100; stage 2 (--mode CF): 63-5-12.')
     parser.add_argument('--freeze_last_layer', default=1, type=int, help="""Number of epochs
         during which we keep the output layer fixed.""")
     parser.add_argument("--lr", default=0.0005, type=float, help="""Learning rate at the end of
