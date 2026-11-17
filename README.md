@@ -1,4 +1,4 @@
-# CASR: Center-anchored Aligned Semantic Reconstruction for Learning High-level Anatomical Semantics in Chest X-ray Foundation Models
+# CASR
 
 Official PyTorch implementation of CASR, a self-supervised framework that learns anatomically anchored,
 cross-scale high-level semantics for chest X-ray foundation models.
@@ -46,39 +46,15 @@ data/
 ## Pretraining
 
 ```bash
-cd pretrain
-wget -P checkpoints https://dl.fbaipublicfiles.com/dino/dino_vitbase8_pretrain/dino_vitbase8_pretrain_full_checkpoint.pth
-
-# Stage 1: warm-up
-torchrun --nproc_per_node=4 main.py --mode C --arch vit_base --patch_size 8 \
-    --datasets chestxray14 --datasets_config datasets_config.yaml \
-    --epochs 200-200-100 --data_granularity 0-1-2 --batch_size_per_gpu 32 \
-    --weights checkpoints/dino_vitbase8_pretrain_full_checkpoint.pth --output_dir checkpoints/stage1
-
-# Stage 2: CASR objective
-torchrun --nproc_per_node=4 main.py --mode CF --arch vit_base --patch_size 8 \
-    --datasets chestxray14 --datasets_config datasets_config.yaml \
-    --epochs 63-5-12 --data_granularity 0-1-2 --batch_size_per_gpu 18 --mask_ratio 0.75 \
-    --weights checkpoints/stage1/checkpoint.pth --output_dir checkpoints/stage2
+torchrun --nproc_per_node=<num_gpus> main.py --mode <C|CF> --datasets chestxray14 --datasets_config datasets_config.yaml --weights <init_checkpoint> --output_dir <output_dir>
 ```
+
+- `--mode C`: stage 1, CS-SA warm-up, initialized from the [DINO ViT-B/8](https://dl.fbaipublicfiles.com/dino/dino_vitbase8_pretrain/dino_vitbase8_pretrain_full_checkpoint.pth) checkpoint.
+- `--mode CF`: stage 2, full CASR objective, initialized from the stage-1 checkpoint.
 
 ## Downstream evaluation
 
 ```bash
-cd downstream
-
-# Classification
-python main_classification.py --data_set ChestXray14 --pretrained <path/to/casr_pretrained.pth> \
-    --data_dir ../data/ChestX-ray14/images \
-    --train_list dataset/Xray14_train_official.txt \
-    --val_list dataset/Xray14_val_official.txt \
-    --test_list dataset/Xray14_test_official.txt \
-    --few_shot X
-
-# Segmentation
-python main_segmentation.py --data_set JSRT-Heart --pretrained <path/to/casr_pretrained.pth> \
-    --train_data_dir ../data/JSRT/heart/train/images --train_mask_dir ../data/JSRT/heart/train/masks \
-    --valid_data_dir ../data/JSRT/heart/val/images --valid_mask_dir ../data/JSRT/heart/val/masks \
-    --test_data_dir ../data/JSRT/heart/test/images --test_mask_dir ../data/JSRT/heart/test/masks \
-    --few_shot X
+python main_classification.py --data_set <ChestXray14|VinDrCXR> --pretrained <casr_pretrained.pth> --data_dir <image_dir> --train_list <train_list> --val_list <val_list> --test_list <test_list> --few_shot <n>
+python main_segmentation.py --data_set <JSRT-Heart|JSRT-Clavicle|Montgomery|VinDr-Rib> --pretrained <casr_pretrained.pth> --train_data_dir <dir> --train_mask_dir <dir> --valid_data_dir <dir> --valid_mask_dir <dir> --test_data_dir <dir> --test_mask_dir <dir> --few_shot <n>
 ```
