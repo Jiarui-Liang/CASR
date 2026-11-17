@@ -1,0 +1,11 @@
+torch>=1.10
+torchvision
+timm==0.4.12            # legacy create_optimizer/create_scheduler(args, ...) API
+albumentations==0.5.2   # ElasticTransform(alpha_affine=...) / RandomSizedCrop(height=, width=) API
+numpy<1.24              # pretrain/util/pos_embed.py uses np.float
+opencv-python
+Pillow
+PyYAML
+pandas
+scikit-learn
+tqdm

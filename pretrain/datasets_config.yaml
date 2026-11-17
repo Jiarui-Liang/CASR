@@ -1,0 +1,3 @@
+chestxray14:
+  data_dir: ../data/ChestX-ray14/images
+  train_list: ../downstream/dataset/Xray14_train_official.txt
